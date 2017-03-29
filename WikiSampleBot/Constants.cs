@@ -7,5 +7,7 @@
         public const string QuestionToAnswerKey = "QuestionToAnswer";
 
         public const string WikiQuestionKey = "WikiQuestion:";
+
+        public const string SlackResponseUrlKey = "SlackResponseUrl";
     }
 }

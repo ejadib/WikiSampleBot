@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using Newtonsoft.Json;
 
-    public class SlackInteractiveMessages
+    public class SlackInteractiveMessage
     {
-        public SlackInteractiveMessages()
+        public SlackInteractiveMessage()
         {
             this.Attachments = new List<SlackAttachment>();
         }
@@ -15,6 +15,12 @@
 
         [JsonProperty("replace_original")]
         public bool ReplaceOriginal { get; set; }
+
+        [JsonProperty("delete_original")]
+        public bool DeleteOriginal { get; set; }
+
+        [JsonProperty("text")]
+        public string Text { get; set; }
 
         [JsonProperty("attachments")]
         public IList<SlackAttachment> Attachments { get; set; }
