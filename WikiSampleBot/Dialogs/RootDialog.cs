@@ -134,7 +134,7 @@
                     {
                         ResponseType = "in_channel",
                         ReplaceOriginal = true,
-                        Text = "Oops. I dont know how to answer that.Anyone willing to help",
+                        Text = "Oops. I dont know how to answer that. Anyone willing to help?",
                         Attachments =
                         {
                             new SlackAttachment
@@ -151,7 +151,7 @@
                 else
                 {
                     await context.FlushAsync(CancellationToken.None);
-                    await context.PostAsync($"@{ user} is answering");
+                    await context.PostAsync($"@{user} is answering");
                 }
 
                 context.Wait(this.MessageReceivedAsync);
