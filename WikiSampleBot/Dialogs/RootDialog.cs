@@ -34,76 +34,30 @@
 
             if (isAnswering)
             {
-                var question = context.PrivateConversationData.Get<string>(Constants.QuestionToAnswerKey);
-
-                var typing = context.MakeMessage();
-                typing.Type = ActivityTypes.Typing;
-                await context.PostAsync(typing);
-
-                await this.updateKnowledgeBaseService.AddAnswer(question, message.Text);
-
-                context.PrivateConversationData.RemoveValue(Constants.IsAnsweringKey);
-                context.PrivateConversationData.RemoveValue(Constants.QuestionToAnswerKey);
-
-                if (ConversationHelper.IsSlackChannel(message))
-                {
-                    var responseUrl = context.PrivateConversationData.Get<string>(Constants.SlackResponseUrlKey);
-
-                    context.PrivateConversationData.RemoveValue(Constants.SlackResponseUrlKey);
-
-                    var interactiveMessage = new SlackInteractiveMessage
-                    {
-                        ResponseType = "in_channel",
-                        DeleteOriginal = true,
-                        Text = $"Wow! I just learnt something new. Thanks {message.From.Name}!",
-                        Attachments =
-                            {
-                                new SlackAttachment
-                                {
-                                    Color = "#36a64f",
-                                    Title = $"{question}",
-                                    Text = message.Text
-                                }
-                            }
-                    };
-
-                    await SendSlackInteractiveMessage(responseUrl, interactiveMessage);
-                }
-                else
-                {
-                    var reply = context.MakeMessage();
-                    reply.Text = $"Wow! I just learnt something new. Thanks {message.From.Name}!";
-                    reply.Attachments = new List<Attachment>
-                    {
-                        new HeroCard
-                        {
-                            Title = question,
-                            Text = message.Text
-                        }.ToAttachment()
-                    };
-
-                    await context.PostAsync(reply);
-                }
-
-                await context.FlushAsync(CancellationToken.None);
-                context.Wait(this.MessageReceivedAsync);
+                await this.SaveAnswer(context, message);
             }
             else if ((ConversationHelper.IsSlackChannel(message) && (message.ChannelData == null || message.ChannelData.Payload == null)) || !ConversationHelper.IsUserGoingToAnswerQuestion(message))
             {
+                var text = message.Conversation.IsGroup.GetValueOrDefault()
+                ? $"Oops. I dont know how to answer that. Anyone willing to help?\n\n**{message.Text}**"
+                : $"Oops. I dont know how to answer that. Do you know the answer to **{message.Text}**?";
+
+               
                 // in reality we can just check if user is going to answer a question and remove the Slack specific check
                 var askForHelpReply = context.MakeMessage();
-                askForHelpReply.Text = $"Oops. I dont know how to answer that. Anyone willing to help?\n\n**{message.Text}**";
+
+                askForHelpReply.Text = text;
                 askForHelpReply.Attachments = new List<Attachment>
+                {
+                    new HeroCard
                     {
-                        new HeroCard
+                        Buttons = new List<CardAction>
                         {
-                            Buttons = new List<CardAction>
-                            {
-                                // sending the qustion as part of the button. Not required for Slack but a quick workaround for other channels.
-                                new CardAction(ActionTypes.PostBack, "Answer", value: $"{Constants.WikiQuestionKey}{message.Text}")
-                            }
-                        }.ToAttachment()
-                    };
+                            // sending the question as part of the button. Not required for Slack but a quick workaround for other channels.
+                            new CardAction(ActionTypes.PostBack, "Answer", value: $"{Constants.WikiQuestionKey}{message.Text}")
+                        }
+                    }.ToAttachment()
+                };
 
                 await context.PostAsync(askForHelpReply);
 
@@ -134,7 +88,9 @@
                     {
                         ResponseType = "in_channel",
                         ReplaceOriginal = true,
-                        Text = "Oops. I dont know how to answer that. Anyone willing to help?",
+                        Text = message.Conversation.IsGroup.GetValueOrDefault()
+                            ? "Oops. I dont know how to answer that. Anyone willing to help?"
+                            : "Oops. I dont know how to answer that. Do you know the answer?",
                         Attachments =
                         {
                             new SlackAttachment
@@ -156,6 +112,63 @@
 
                 context.Wait(this.MessageReceivedAsync);
             }
+        }
+
+        private async Task SaveAnswer(IDialogContext context, IMessageActivity message)
+        {
+            var question = context.PrivateConversationData.GetValue<string>(Constants.QuestionToAnswerKey);
+
+            var typing = context.MakeMessage();
+            typing.Type = ActivityTypes.Typing;
+            await context.PostAsync(typing);
+
+            await this.updateKnowledgeBaseService.AddAnswer(question, message.Text);
+
+            context.PrivateConversationData.RemoveValue(Constants.IsAnsweringKey);
+            context.PrivateConversationData.RemoveValue(Constants.QuestionToAnswerKey);
+
+            if (ConversationHelper.IsSlackChannel(message))
+            {
+                var responseUrl = context.PrivateConversationData.GetValue<string>(Constants.SlackResponseUrlKey);
+
+                context.PrivateConversationData.RemoveValue(Constants.SlackResponseUrlKey);
+
+                var interactiveMessage = new SlackInteractiveMessage
+                {
+                    ResponseType = "in_channel",
+                    DeleteOriginal = true,
+                    Text = $"Wow! I just learnt something new. Thanks {message.From.Name}!",
+                    Attachments =
+                            {
+                                new SlackAttachment
+                                {
+                                    Color = "#36a64f",
+                                    Title = $"{question}",
+                                    Text = message.Text
+                                }
+                            }
+                };
+
+                await SendSlackInteractiveMessage(responseUrl, interactiveMessage);
+            }
+            else
+            {
+                var reply = context.MakeMessage();
+                reply.Text = $"Wow! I just learnt something new. Thanks {message.From.Name}!";
+                reply.Attachments = new List<Attachment>
+                    {
+                        new HeroCard
+                        {
+                            Title = question,
+                            Text = message.Text,
+                        }.ToAttachment()
+                    };
+
+                await context.PostAsync(reply);
+            }
+
+            await context.FlushAsync(CancellationToken.None);
+            context.Wait(this.MessageReceivedAsync);
         }
 
         // TODO: Move to another class

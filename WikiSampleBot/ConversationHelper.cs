@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Connector;
 
     public class ConversationHelper
@@ -22,12 +23,17 @@
 
         public static bool IsSlackChannel(IMessageActivity message)
         {
-            return message != null && message.ChannelId.Equals("slack", StringComparison.InvariantCultureIgnoreCase);
+            return message != null && message.ChannelId.Equals(ChannelIds.Slack, StringComparison.InvariantCultureIgnoreCase);
         }
 
         public static bool IsUserGoingToAnswerQuestion(IMessageActivity message)
         {
-            return message != null && message.Text.StartsWith(Constants.WikiQuestionKey);
+            if (message == null)
+            {
+                return false;
+            }
+
+            return message.Text.StartsWith(Constants.WikiQuestionKey);
         }
 
         public static bool IsBotMentioned(IMessageActivity message, ChannelAccount botAccount)

@@ -1,8 +1,10 @@
 ﻿namespace WikiSampleBot
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Bot.Builder.CognitiveServices.QnAMaker;
+    using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Builder.Dialogs.Internals;
     using Microsoft.Bot.Builder.Internals.Fibers;
     using Microsoft.Bot.Builder.Scorables;
@@ -39,7 +41,7 @@
                 return "reset";
             }
 
-            if (messageActivity != null && ConversationHelper.IsBotMentioned(messageActivity, botAccount))
+            if (messageActivity != null && (ConversationHelper.IsBotMentioned(messageActivity, botAccount)))
             {
                 // removes any mention from the text
                 messageActivity.Text = messageActivity.Text.Replace("@" + messageActivity.Recipient.Name, string.Empty).Trim();
