@@ -10,21 +10,19 @@
     using WikiSampleBot.Models;
 
     [Serializable]
-    public class UpdateQnAKnowledgeBaseService
+    public class WikiQnAKnowledgeBaseService
     {
-        private const string QnaMakerBaseUri = "https://westus.api.cognitive.microsoft.com/qnamaker/v2.0/knowledgebases/{0}";
+        private const string QnaMakerBaseUri = "https://westus.api.cognitive.microsoft.com/qnamaker/v3.0/knowledgebases/{0}";
      
         private readonly string qnaMakerSubscriptionKey;
-        private readonly Uri updateKnowledgeUri;
-        private readonly Uri publishKnowledgeUri;
+        private readonly Uri qnaMakerUri;
 
-        public UpdateQnAKnowledgeBaseService(string qnaMakerSubscriptionKey, string qnaMakerKnowledgeBaseId)
+        public WikiQnAKnowledgeBaseService(string qnaMakerSubscriptionKey, string qnaMakerKnowledgeBaseId)
         {
             SetField.NotNull(out this.qnaMakerSubscriptionKey, nameof(qnaMakerSubscriptionKey), qnaMakerSubscriptionKey);
             SetField.CheckNull(nameof(qnaMakerKnowledgeBaseId), qnaMakerKnowledgeBaseId);
 
-            this.updateKnowledgeUri = new Uri(string.Format(QnaMakerBaseUri, qnaMakerKnowledgeBaseId));
-            this.publishKnowledgeUri = new Uri(string.Format(QnaMakerBaseUri, qnaMakerKnowledgeBaseId));
+            this.qnaMakerUri = new Uri(string.Format(QnaMakerBaseUri, qnaMakerKnowledgeBaseId));
         }
 
         public async Task AddAnswer(string question, string answer)
@@ -35,13 +33,13 @@
 
                 var body = new UpdateKnowledgeBaseBody()
                 {
-                    QuestionsToAdd = new QuestionsToAdd
+                    QuestionsToAdd = new KnowledgeBasePayload
                     {
                         QuestionsAndAnswers = new List<QuestionAndAnswer>
                         {
                             new QuestionAndAnswer
                             {
-                                Question = question,
+                                Questions = new[] { question },
                                 Answer = answer
                             }
                         }
@@ -50,13 +48,29 @@
 
                 var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                var result = await PatchAsync(client, this.updateKnowledgeUri, content);
+                var result = await PatchAsync(client, this.qnaMakerUri, content);
 
                 result.EnsureSuccessStatusCode();
 
-                var publishResponse = await client.PutAsync(this.publishKnowledgeUri, null);
+                var publishResponse = await client.PutAsync(this.qnaMakerUri, null);
 
                 publishResponse.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task<KnowledgeBasePayload> DownloadKb()
+        {
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", this.qnaMakerSubscriptionKey);
+
+                var downloadKbResponse = await client.GetAsync(this.qnaMakerUri).ConfigureAwait(false);
+
+                downloadKbResponse.EnsureSuccessStatusCode();
+
+                var kb = await downloadKbResponse.Content.ReadAsStringAsync();
+
+                return JsonConvert.DeserializeObject<KnowledgeBasePayload>(kb);
             }
         }
 

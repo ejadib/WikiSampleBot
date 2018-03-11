@@ -9,6 +9,6 @@
         }
 
         [JsonProperty(PropertyName = "add")]
-        public QuestionsToAdd QuestionsToAdd { get; set; }
+        public KnowledgeBasePayload QuestionsToAdd { get; set; }
     }
 }

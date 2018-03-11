@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using Newtonsoft.Json;
 
-    public class QuestionsToAdd
+    public class KnowledgeBasePayload
     {
-        [JsonProperty(PropertyName = "qnaPairs")]
+        [JsonProperty(PropertyName = "qnaList")]
         public IEnumerable<QuestionAndAnswer> QuestionsAndAnswers { get; set; }
     }
 }

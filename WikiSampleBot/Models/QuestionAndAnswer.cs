@@ -4,8 +4,8 @@
 
     public class QuestionAndAnswer
     {
-        [JsonProperty(PropertyName = "question")]
-        public string Question { get; set; }
+        [JsonProperty(PropertyName = "questions")]
+        public string[] Questions { get; set; }
 
         [JsonProperty(PropertyName = "answer")]
         public string Answer { get; set; }

@@ -133,19 +133,20 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\KnowledgeBasePayload.cs" />
     <Compile Include="Models\QuestionAndAnswer.cs" />
-    <Compile Include="Models\QuestionsToAdd.cs" />
     <Compile Include="Models\SlackAttachment.cs" />
     <Compile Include="Models\SlackInteractiveMessage.cs" />
     <Compile Include="Models\UpdateKnowledgeBaseBody.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\UpdateQnAKnowledgeBaseService.cs" />
     <Compile Include="ConversationHelper.cs" />
+    <Compile Include="Services\WikiQnAKnowledgeBaseService.cs" />
     <Compile Include="WikiModule.cs" />
     <Compile Include="WikiScorable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\swwikibot - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

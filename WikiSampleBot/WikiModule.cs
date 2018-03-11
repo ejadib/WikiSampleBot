@@ -39,7 +39,7 @@
                 .SingleInstance();
 
             builder
-              .Register(c => new UpdateQnAKnowledgeBaseService(this.qnaMakerSubscriptionKey, this.qnaMakerKnowledgeBaseId))
+              .Register(c => new WikiQnAKnowledgeBaseService(this.qnaMakerSubscriptionKey, this.qnaMakerKnowledgeBaseId))
               .AsSelf()
               .SingleInstance();
 
@@ -48,7 +48,8 @@
                     new QnAMakerScorable(
                         new QnAMakerServiceScorable(c.Resolve<IQnAService>(), c.Resolve<IBotToUser>()), c.Resolve<ITraits<double>>()), 
                     c.Resolve<IDialogStack>(),
-                    c.Resolve<IBotData>()))
+                    c.Resolve<IBotData>(),
+                    c.Resolve<WikiQnAKnowledgeBaseService>()))
                 .AsImplementedInterfaces()
                 .InstancePerMatchingLifetimeScope(DialogModule.LifetimeScopeTag);
         }

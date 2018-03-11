@@ -14,9 +14,9 @@
     [Serializable]
     public class RootDialog : IDialog<object>
     {
-        private UpdateQnAKnowledgeBaseService updateKnowledgeBaseService;
+        private WikiQnAKnowledgeBaseService updateKnowledgeBaseService;
 
-        public RootDialog(UpdateQnAKnowledgeBaseService updateKnowledgeBaseService)
+        public RootDialog(WikiQnAKnowledgeBaseService updateKnowledgeBaseService)
         {
             SetField.NotNull(out this.updateKnowledgeBaseService, nameof(updateKnowledgeBaseService), updateKnowledgeBaseService);
         }
@@ -42,7 +42,6 @@
                 ? $"Oops. I dont know how to answer that. Anyone willing to help?\n\n**{message.Text}**"
                 : $"Oops. I dont know how to answer that. Do you know the answer to **{message.Text}**?";
 
-               
                 // in reality we can just check if user is going to answer a question and remove the Slack specific check
                 var askForHelpReply = context.MakeMessage();
 
@@ -67,7 +66,7 @@
             {
                 string user = message.From.Name;
 
-                // the value of the button should containt the question
+                // the value of the button should contain the question
                 string question = message.Text.Substring(Constants.WikiQuestionKey.Length);
 
                 context.PrivateConversationData.SetValue(Constants.IsAnsweringKey, true);
